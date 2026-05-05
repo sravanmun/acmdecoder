@@ -1,0 +1,13 @@
+CompileFlags:
+  Add:
+    - -I../include
+    - -std=c++20
+    - -I/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/include/python3.14 
+    - -I/Users/sravan/.pyenv/versions/3.14.3/lib/python3.14/
+    - -I/opt/homebrew/opt/zstd/include
+    
+
+    - -I/home/damicm/Soft/ccd-cdaq/cdaq_env/lib/python3.12/site-packages/pybind11/include/pybind11/
+    - -I/home/damicm/Soft/ccd-cdaq/cdaq_env/lib/python3.12/site-packages/pybind11/include/
+    - -I/home/damicm/Soft/ccd-cdaq/cdaq_env/lib/python3.12/site-packages/pybind11/
+

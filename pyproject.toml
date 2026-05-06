@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "acmdecoder"
-version = "3.0.0"
+version = "0.1.0"
 description = "Decoder for raw binary data from the ACM (Acquisition and Control Module) board"
 requires-python = ">=3.10"
 license = {text = "MIT"}

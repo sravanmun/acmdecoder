@@ -21,8 +21,9 @@ cmake.version = ">=3.14"
 cmake.build-type = "Release"
 
 [tool.cibuildwheel]
-# zstd and bzip2 are built from source via FetchContent in cpp/CMakeLists.txt,
-# so no `before-all` system-package install is needed.
+# zstd and bzip2 are built from source via FetchContent in cpp/CMakeLists.txt
+# (forced via ACMDECODER_FETCH_DEPS=1) so wheels are statically self-contained.
 build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
 skip = ["*-musllinux*", "*-win*"]
 test-command = "python -c \"from acmdecoder import Decoder\""
+environment = { ACMDECODER_FETCH_DEPS = "1" }

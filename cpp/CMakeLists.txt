@@ -13,10 +13,14 @@ if(NOT TARGET pybind11::module)
 endif()
 
 # ----- Compression libs: try system first, fall back to FetchContent ---------
-find_package(PkgConfig QUIET)
-if(PkgConfig_FOUND)
-  pkg_check_modules(ZSTD QUIET IMPORTED_TARGET libzstd)
-  pkg_check_modules(BZ2  QUIET IMPORTED_TARGET bzip2)
+# Set ACMDECODER_FETCH_DEPS=1 in the environment to skip the system-libs
+# lookup and always build from source (used in CI for self-contained wheels).
+if(NOT DEFINED ENV{ACMDECODER_FETCH_DEPS})
+  find_package(PkgConfig QUIET)
+  if(PkgConfig_FOUND)
+    pkg_check_modules(ZSTD QUIET IMPORTED_TARGET libzstd)
+    pkg_check_modules(BZ2  QUIET IMPORTED_TARGET bzip2)
+  endif()
 endif()
 
 include(FetchContent)

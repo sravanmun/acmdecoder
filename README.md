@@ -2,28 +2,25 @@
 
 Decoder for raw binary data from the ACM (Acquisition and Control Module) board. Takes a `.bin` file produced by the DAQ and returns level 0 / 1 / 2 frames as zero-copy NumPy / pandas views.
 
+# Requirements
+
+- **OS:** Linux x86_64 with glibc ≥ 2.28 (CentOS / RHEL / AlmaLinux 8+, Debian 10+, Ubuntu 18.10+, Fedora 28+, Arch) or macOS 13+ (Intel or Apple Silicon). Alpine Linux (musl) and Linux aarch64 are not currently supported by prebuilt wheels.
+- **Python:** 3.10, 3.11, 3.12, 3.13, or 3.14
+
 # Installation
 
-## Dependencies
-`acmdecoder` is a C++ extension and links against `libzstd` and `libbzip2`. Install those first.
-
-If not using pixi
-```shell
-brew install zstd bzip2                    # macOS
-sudo dnf install libzstd-devel bzip2-devel # CentOS 8 & 9
-sudo apt install libzstd-dev libbz2-dev    # Debian
+```bash
+pip install acmdecoder
 ```
 
-If using pixi
-```shell
-pixi add zstd bzip2
-```
+## Building from source
 
-## Build & install
-From the project root:
+From a checkout of the repo:
 ```bash
 pip install .
 ```
+
+Source builds require a **C++20 compiler**. All other native dependencies are fetched and built automatically by CMake (one-time network access on first build).
 
 
 # Usage

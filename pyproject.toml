@@ -6,7 +6,7 @@ build-backend = "scikit_build_core.build"
 name = "acmdecoder"
 version = "3.0.0"
 description = "Decoder for raw binary data from the ACM (Acquisition and Control Module) board"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 dependencies = [
     "pybind11",
@@ -17,5 +17,12 @@ dependencies = [
 [tool.scikit-build]
 wheel.packages = ["acmdecoder"]
 cmake.source-dir = "cpp"
-cmake.version = ">=3.10"
+cmake.version = ">=3.14"
 cmake.build-type = "Release"
+
+[tool.cibuildwheel]
+# zstd and bzip2 are built from source via FetchContent in cpp/CMakeLists.txt,
+# so no `before-all` system-package install is needed.
+build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
+skip = ["*-musllinux*", "*-win*"]
+test-command = "python -c \"from acmdecoder import Decoder\""

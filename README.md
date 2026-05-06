@@ -4,7 +4,7 @@ Decoder for raw binary data from the ACM (Acquisition and Control Module) board.
 
 # Requirements
 
-- **OS:** Linux x86_64 with glibc ≥ 2.28 (CentOS / RHEL / AlmaLinux 8+, Debian 10+, Ubuntu 18.10+, Fedora 28+, Arch) or macOS 13+ (Intel or Apple Silicon). Alpine Linux (musl) and Linux aarch64 are not currently supported by prebuilt wheels.
+- **OS:** Linux x86_64 with glibc ≥ 2.28 (CentOS / RHEL / AlmaLinux 8+, Debian 10+, Ubuntu 18.10+, Fedora 28+, Arch) or macOS 11+ on Apple Silicon. Alpine Linux (musl), Linux aarch64, and Intel Macs do not have prebuilt wheels; source builds work on those platforms with a C++20 compiler.
 - **Python:** 3.10, 3.11, 3.12, 3.13, or 3.14
 
 # Installation

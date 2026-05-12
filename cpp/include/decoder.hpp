@@ -131,6 +131,7 @@ private:
                             uint32_t skp_idx, bool is_pedestal);
     void check_accumulator2(uint32_t fpga_cds_n, int64_t fpga_cds_sum, int64_t fpga_cds_sum2,
                             uint32_t fpga_cts_n, int64_t fpga_cts_sum, int64_t fpga_cts_sum2);
+    void check_errors();
 
     // functions to decode
     void decode();

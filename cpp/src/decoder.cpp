@@ -90,6 +90,7 @@ BinaryDecoder::BinaryDecoder(std::string fname,
         }
     }
 
+    check_errors();
     log(LogLevel::DEBUG, "Finished decoding " + filename);
 }
 
@@ -562,6 +563,23 @@ void BinaryDecoder::check_accumulator2(uint32_t fpga_cds_n, int64_t fpga_cds_sum
     log(LogLevel::DEBUG, msg);
 }
 
+
+void BinaryDecoder::check_errors(){
+
+    auto log_helper = [this](bool is_error, const std::string& msg){
+        if(is_error){
+            log(LogLevel::WARNING, msg + " invalid");
+        }
+        else{
+            log(LogLevel::DEBUG, msg + " valid");
+        }
+    };
+
+    log_helper(error_acc,  "accumulation of sum");
+    log_helper(error_idx,  "cyclic index");
+    log_helper(error_cin,  "clock stability");
+    log_helper(error_nadc, "number of samples");
+}
 
 
 

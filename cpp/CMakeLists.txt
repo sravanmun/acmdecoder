@@ -12,7 +12,7 @@ if(NOT TARGET pybind11::module)
   find_package(pybind11 REQUIRED CONFIG)
 endif()
 
-# ----- Compression libs: try system first, fall back to FetchContent ---------
+# ----- Third-party deps: try system first, fall back to FetchContent ---------
 # Set ACMDECODER_FETCH_DEPS=1 in the environment to skip the system-libs
 # lookup and always build from source (used in CI for self-contained wheels).
 if(NOT DEFINED ENV{ACMDECODER_FETCH_DEPS})
@@ -21,6 +21,7 @@ if(NOT DEFINED ENV{ACMDECODER_FETCH_DEPS})
     pkg_check_modules(ZSTD QUIET IMPORTED_TARGET libzstd)
     pkg_check_modules(BZ2  QUIET IMPORTED_TARGET bzip2)
   endif()
+  find_package(nlohmann_json 3.11 QUIET CONFIG)
 endif()
 
 include(FetchContent)
@@ -75,6 +76,18 @@ else()
   target_link_libraries(bz2_dep INTERFACE bzip2_static)
 endif()
 
+# nlohmann_json (header-only)
+if(NOT nlohmann_json_FOUND)
+  message(STATUS "nlohmann_json not found on system; building from source via FetchContent")
+  set(JSON_BuildTests OFF CACHE INTERNAL "")
+  set(JSON_Install    OFF CACHE INTERNAL "")
+  FetchContent_Declare(nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.12.0
+  )
+  FetchContent_MakeAvailable(nlohmann_json)
+endif()
+
 # ----- Core C++ library (OBJECT) ---------------------------------------------
 set(PROJ_SOURCES
   src/decoder.cpp
@@ -83,7 +96,7 @@ set(PROJ_SOURCES
 
 add_library(decoder_core OBJECT ${PROJ_SOURCES})
 target_include_directories(decoder_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(decoder_core PUBLIC zstd_dep bz2_dep)
+target_link_libraries(decoder_core PUBLIC zstd_dep bz2_dep nlohmann_json::nlohmann_json)
 
 # ----- Python bindings -------------------------------------------------------
 pybind11_add_module(decoder
@@ -92,7 +105,7 @@ pybind11_add_module(decoder
 )
 
 target_include_directories(decoder PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(decoder PRIVATE decoder_core zstd_dep bz2_dep)
+target_link_libraries(decoder PRIVATE decoder_core zstd_dep bz2_dep nlohmann_json::nlohmann_json)
 
 # macOS rpath so the loader can find deps next to the module
 if(APPLE)

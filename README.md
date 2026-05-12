@@ -71,3 +71,15 @@ Decoder(jsonfile, binfile, debug=0, write_log=False)
 **Error counters**: `error_acc`, `error_idx`, `error_cin`, `error_nadc`
 
 **Sequence counters**: `cclki`, `cclke`, `cepix`, `cline`, `cpong`, `start`, `busy`, `end`
+
+# Third-Party Software
+
+`acmdecoder` wheels statically link the following libraries. License texts are
+shipped in the `LICENSES/` directory of the source tree and bundled into the
+wheel.
+
+| Library | Version | License | Upstream |
+|---|---|---|---|
+| [nlohmann/json](LICENSES/nlohmann_json.txt) | 3.12.0 | MIT | https://github.com/nlohmann/json |
+| [zstd](LICENSES/zstd.txt) | 1.5.6 | BSD-3-Clause | https://github.com/facebook/zstd |
+| [bzip2](LICENSES/bzip2.txt) | 1.0.8 | bzip2-1.0.6 | https://sourceware.org/bzip2/ |

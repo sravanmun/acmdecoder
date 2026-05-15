@@ -71,27 +71,43 @@ py::object dataframe_from_vector(std::vector<T>& data, const py::dtype& dtype, p
 
 PYBIND11_MODULE(decoder, m){
     py::class_<BinaryDecoder>(m, "Decoder")
-         // short-form: Decoder(binfile [, debug, write_log]) -> from_bin
+         // short-form: Decoder(binfile [, debug, write_log, print_level]) -> from_bin
          // auto-detects a sibling <stem>.meta file and uses it if present.
         .def(py::init([](py::object binfile,
                           uint32_t debug,
-                          bool write_log) -> std::unique_ptr<BinaryDecoder> {
+                          bool write_log,
+                          const std::string& print_level) -> std::unique_ptr<BinaryDecoder> {
                py::module_ os = py::module_::import("os");
                std::string bin_path = os.attr("fspath")(binfile).cast<std::string>();
+               LogLevel lvl = logLevelFromString(print_level);
                return std::make_unique<BinaryDecoder>(
-                   std::move(BinaryDecoder::from_bin(bin_path, debug, write_log))
+                   std::move(BinaryDecoder::from_bin(bin_path, debug, write_log, lvl))
                );
              }),
              py::arg("binfile"),
              py::arg("debug") = 0,
-             py::arg("write_log") = false
+             py::arg("write_log") = false,
+             py::arg("print_level") = "INFO"
          )
 
          // full-form: explicit geometry, no .meta lookup
-        .def(py::init<std::string,uint32_t,bool,uint32_t,uint32_t,uint32_t,uint32_t>(),
+        .def(py::init([](std::string fname,
+                          uint32_t debug,
+                          bool write_log,
+                          const std::string& print_level,
+                          uint32_t nrow,
+                          uint32_t ncol,
+                          uint32_t ndcm,
+                          uint32_t nint) -> std::unique_ptr<BinaryDecoder> {
+               LogLevel lvl = logLevelFromString(print_level);
+               return std::make_unique<BinaryDecoder>(
+                   std::move(fname), debug, write_log, lvl, nrow, ncol, ndcm, nint
+               );
+             }),
              py::arg("fname"),
              py::arg("debug")=0,
              py::arg("write_log")=false,
+             py::arg("print_level")="INFO",
              py::arg("nrow")=0,
              py::arg("ncol")=0,
              py::arg("ndcm")=1,
@@ -101,20 +117,23 @@ PYBIND11_MODULE(decoder, m){
         .def(py::init([](py::object jsonfile,
                           py::object binfile,
                           uint32_t debug,
-                          bool write_log) -> std::unique_ptr<BinaryDecoder> {
+                          bool write_log,
+                          const std::string& print_level) -> std::unique_ptr<BinaryDecoder> {
 
                py::module_ os = py::module_::import("os");
                std::string json_path = os.attr("fspath")(jsonfile).cast<std::string>();
                std::string bin_path  = os.attr("fspath")(binfile).cast<std::string>();
+               LogLevel lvl = logLevelFromString(print_level);
 
                return std::make_unique<BinaryDecoder>(
-                   std::move(BinaryDecoder::from_meta(json_path, bin_path, debug, write_log))
+                   std::move(BinaryDecoder::from_meta(json_path, bin_path, debug, write_log, lvl))
                );
              }),
               py::arg("jsonfile"),
               py::arg("binfile"),
               py::arg("debug") = 0,
-              py::arg("write_log")=false
+              py::arg("write_log")=false,
+              py::arg("print_level")="INFO"
          )
 
         .def_property_readonly("df0_view", [](BinaryDecoder& self) {

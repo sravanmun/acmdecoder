@@ -7,11 +7,33 @@
 #include <ctime>
 #include <sys/stat.h>
 #include <cstdlib>
+#include <algorithm>
+#include <stdexcept>
+
+
+LogLevel logLevelFromString(const std::string& s) {
+    std::string u;
+    u.reserve(s.size());
+    std::transform(s.begin(), s.end(), std::back_inserter(u),
+                   [](unsigned char c){ return std::toupper(c); });
+    if (u == "DEBUG")   return LogLevel::DEBUG;
+    if (u == "INFO")    return LogLevel::INFO;
+    if (u == "WARNING") return LogLevel::WARNING;
+    if (u == "FATAL")   return LogLevel::FATAL;
+    throw std::invalid_argument("invalid log level: " + s
+        + " (expected DEBUG, INFO, WARNING, or FATAL)");
+}
 
 
 Logger& Logger::getInstance() {
     static Logger instance;
     return instance;
+}
+
+
+void Logger::setPrintLevel(LogLevel level) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    print_level_ = level;
 }
 
 
@@ -125,8 +147,9 @@ void Logger::log(LogLevel level, const std::string& where, const std::string& me
     std::string timestamp = getTimestamp();
     std::string level_str = getLevelString(level);
     
-    // Console output with color (only for INFO, WARNING, FATAL)
-    if (level >= LogLevel::INFO) {
+    // Console output with color, filtered by print_level_ (file output
+    // is unfiltered — write_log records everything for forensics)
+    if (level >= print_level_) {
         setConsoleColor(level);
         std::cout << timestamp << " - " << where << " - " << level_str << " - " << message << std::endl;
         resetConsoleColor();

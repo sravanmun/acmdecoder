@@ -19,6 +19,7 @@ static constexpr uint32_t seq_to_adc(uint32_t nint) {
 BinaryDecoder::BinaryDecoder(std::string fname,
                   uint32_t output_lvl,
                   bool write_log,
+                  LogLevel print_level,
                   uint32_t nrow,
                   uint32_t ncol,
                   uint32_t ndcm,
@@ -30,6 +31,8 @@ BinaryDecoder::BinaryDecoder(std::string fname,
         ndcm(ndcm),
         nadc(seq_to_adc(nint)),
         write_log(write_log) {
+
+    Logger::getInstance().setPrintLevel(print_level);
 
     // variables to load read words into
     uint32_t header = 0;
@@ -96,12 +99,15 @@ BinaryDecoder::BinaryDecoder(std::string fname,
 
 
 BinaryDecoder BinaryDecoder::from_meta(std::string jsonfile, std::string binfile,
-                                       uint32_t output_lvl, bool write_log)
+                                       uint32_t output_lvl, bool write_log,
+                                       LogLevel print_level)
 {
+    Logger::getInstance().setPrintLevel(print_level);
+
     if (!std::filesystem::is_regular_file(jsonfile)) {
         Logger::getInstance().log(LogLevel::WARNING, "BinaryDecoder",
             "meta file not found, using defaults: " + jsonfile, write_log);
-        return BinaryDecoder(std::move(binfile), output_lvl, write_log);
+        return BinaryDecoder(std::move(binfile), output_lvl, write_log, print_level);
     }
 
     std::ifstream jf(jsonfile);
@@ -115,12 +121,14 @@ BinaryDecoder BinaryDecoder::from_meta(std::string jsonfile, std::string binfile
     uint32_t ncol = is_psdmode ? 0u : cfg.value<uint32_t>("NCOL", 0);
     uint32_t nint = is_psdmode ? 0u : cfg.value<uint32_t>("delayInt", 0);
 
-    return BinaryDecoder(std::move(binfile), output_lvl, write_log, nrow, ncol, ndcm, nint);
+    return BinaryDecoder(std::move(binfile), output_lvl, write_log, print_level,
+                         nrow, ncol, ndcm, nint);
 }
 
 
 BinaryDecoder BinaryDecoder::from_bin(std::string binfile,
-                                      uint32_t output_lvl, bool write_log)
+                                      uint32_t output_lvl, bool write_log,
+                                      LogLevel print_level)
 {
     namespace fs = std::filesystem;
 
@@ -132,7 +140,7 @@ BinaryDecoder BinaryDecoder::from_bin(std::string binfile,
     meta_path.replace_extension(".meta");
 
     return BinaryDecoder::from_meta(meta_path.string(), std::move(binfile),
-                                    output_lvl, write_log);
+                                    output_lvl, write_log, print_level);
 }
 
 
@@ -315,7 +323,7 @@ void BinaryDecoder::decodeLevel2(std::vector<uint32_t>& v_word)
 
     // check clock, cyclic index, and number of adc samples in cds/cts
     check_clk(cin);
-    check_cyclic_idx(idx, 0);
+    check_cyclic_idx(idx, 3);
     check_n_cds(cds_n);
     check_n_cts(cts_n);
     check_accumulator2(cds_n, cds_sum, cds_sum2, cts_n, cts_sum, cts_sum2);
@@ -484,18 +492,21 @@ void BinaryDecoder::check_n_cts(uint32_t n_cts) {
 }
 
 
+
 void BinaryDecoder::check_cyclic_idx(uint8_t idx, uint8_t ramp) {
     const uint8_t expected = static_cast<uint8_t>((idx_prev + 1) & 0x7F);
-    if (idx == expected) { idx_prev = idx; return; }
-
-    std::string msg = "Cyclic index inconsistency at pixel " + std::to_string(cepix)
-                    + ", skip "      + std::to_string(idx_skp[ramp])
-                    + " | prev="     + std::to_string(static_cast<int>(idx_prev))
-                    + " expected="   + std::to_string(static_cast<int>(expected))
-                    + " current="    + std::to_string(static_cast<int>(idx));
-    log(LogLevel::DEBUG, msg);
-    error_idx = true;
-    idx_prev = idx;
+    
+    if (idx != expected) {
+        std::string msg = "Cyclic index inconsistency at pixel " + std::to_string(cepix)
+                        + ((ramp == 0 || ramp == 1) ? ", skip " + std::to_string(idx_skp[ramp]) : "")
+                        + " | prev=" + std::to_string(static_cast<int>(idx_prev))
+                        + " expected=" + std::to_string(static_cast<int>(expected))
+                        + " current=" + std::to_string(static_cast<int>(idx));
+        log(LogLevel::DEBUG, msg);
+        error_idx = true;
+    }
+    
+    if (ramp != 0 && ramp != 1) idx_prev = idx;
 }
 
 

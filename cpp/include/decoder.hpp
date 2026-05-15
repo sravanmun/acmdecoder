@@ -22,6 +22,7 @@ public:
     BinaryDecoder(std::string fname,
                   uint32_t output_lvl=0,
                   bool write_log=false,
+                  LogLevel print_level=LogLevel::INFO,
                   uint32_t nrow=0,
                   uint32_t ncol=0,
                   uint32_t ndcm=1,
@@ -29,12 +30,14 @@ public:
 
     // Factory: parse JSON metadata, then construct with correct parameters
     static BinaryDecoder from_meta(std::string jsonfile, std::string binfile,
-                                   uint32_t output_lvl=0, bool write_log=false);
+                                   uint32_t output_lvl=0, bool write_log=false,
+                                   LogLevel print_level=LogLevel::INFO);
 
     // Factory: look for a sibling <stem>.meta file next to binfile.
     // If present, delegate to from_meta; otherwise construct with defaults.
     static BinaryDecoder from_bin(std::string binfile,
-                                  uint32_t output_lvl=0, bool write_log=false);
+                                  uint32_t output_lvl=0, bool write_log=false,
+                                  LogLevel print_level=LogLevel::INFO);
 
     //Destructor
     ~BinaryDecoder() {
